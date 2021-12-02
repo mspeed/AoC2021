@@ -1,10 +1,12 @@
 #include<iostream>
 #include<string>
 #include<fstream>
+#include<vector>
 
 using std::string;
 using std::cout; using std::endl;
 using std::fstream;
+using std::vector; using std::next;
 
 int32_t ThreeTapSMA(int32_t const& Input)
 {
@@ -18,19 +20,26 @@ int32_t ThreeTapSMA(int32_t const& Input)
   return Output;
 }
 
-fstream& ParseDepths(fstream& In, int32_t& Count)
+template<typename T>
+uint32_t CountIncreases(vector<T> const& Values)
 {
-  int32_t Depth;
-  int32_t PreviousDepth = -1;
-  int32_t PreFill = -2;
-  while(In >> Depth)
+  uint32_t Count = 0;
+  cout << "Size: " << Values.size() << endl;
+  for(typename vector<T>::const_iterator  it = Values.begin();
+                                  (it != Values.end()) && (next(it) != Values.end());
+                                  ++it)
   {
-    Depth = ThreeTapSMA(Depth);
-    if(PreFill < 0){ PreFill++; continue; }
-    if(Depth > PreviousDepth) { Count++; }
-    PreviousDepth = Depth;
+    if(*it < *next(it)){ Count++; }
   }
-  return In;
+  return Count;
+}
+
+template<typename T>
+vector<T>& ParseDepths(fstream& In, vector<T>& Depths)
+{
+  T Depth;
+  while(In >> Depth) { Depths.push_back(Depth); }
+  return Depths;
 }
 
 int main(int argc, char * argv[])
@@ -39,12 +48,14 @@ int main(int argc, char * argv[])
 
   string const InputFilename(argv[1]);
 
-  int32_t IncreaseCount = -1;
+  //int32_t IncreaseCount = -1;
 
   fstream fs(InputFilename);
 
-  ParseDepths(fs, IncreaseCount);
+  vector<uint32_t> Depths;
 
-  cout << "Increase count: " << IncreaseCount << endl;
+  //ParseDepths(fs, Depths);
+
+  cout << "Increase count: " << CountIncreases(ParseDepths(fs, Depths)) << endl;
 
 }
