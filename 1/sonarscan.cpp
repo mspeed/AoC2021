@@ -1,22 +1,25 @@
 #include<iostream>
-#include<string>
 #include<fstream>
 #include<vector>
 
-using std::string;
-using std::cout; using std::endl;
+using std::cout; using std::endl; using std::cerr;
 using std::fstream;
 using std::vector; using std::next;
 
-int32_t ThreeTapSMA(int32_t const& Input)
+template<typename T, uint8_t TapCount>
+vector<T>& SMA(vector<T>& Output, vector<T> const& Input)
 {
-  static int32_t x1 = 0;
-  static int32_t x2 = 0;
-
-  int32_t const Output = Input + x1 + x2;
-
-  x2 = x1; x1 = Input;
-  //return (x1 && x2 ) ? Output : -1;
+  for(typename vector<T>::const_iterator  it = Input.begin();
+                                          next(it, TapCount-1) != Input.end();
+                                          ++it)
+  {
+    T Accu = 0;
+    for(int i = 0; i < TapCount; i++)
+    {
+      Accu += *next(it, i);
+    }
+    Output.push_back(Accu);
+  }
   return Output;
 }
 
@@ -24,10 +27,9 @@ template<typename T>
 uint32_t CountIncreases(vector<T> const& Values)
 {
   uint32_t Count = 0;
-  cout << "Size: " << Values.size() << endl;
   for(typename vector<T>::const_iterator  it = Values.begin();
-                                  (it != Values.end()) && (next(it) != Values.end());
-                                  ++it)
+                                          next(it) != Values.end();
+                                          ++it)
   {
     if(*it < *next(it)){ Count++; }
   }
@@ -46,16 +48,14 @@ int main(int argc, char * argv[])
 {
   if(argc != 2){ cout << "Usage: " << argv[0] << " <filename>" << endl; }
 
-  string const InputFilename(argv[1]);
+  fstream fs(argv[1]);
+  if(!fs.is_open()){ cerr << "Failed to read file." << endl; return -1; }
 
-  //int32_t IncreaseCount = -1;
+  using depth_type = uint32_t;
+  vector<depth_type> Depths;
+  vector<depth_type> FilteredDepths;
 
-  fstream fs(InputFilename);
+  cout << "Increase count: " << CountIncreases(SMA<depth_type, 3>(FilteredDepths, ParseDepths(fs, Depths))) << endl;
 
-  vector<uint32_t> Depths;
-
-  //ParseDepths(fs, Depths);
-
-  cout << "Increase count: " << CountIncreases(ParseDepths(fs, Depths)) << endl;
-
+  return 0;
 }
